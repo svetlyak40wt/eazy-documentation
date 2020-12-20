@@ -153,10 +153,14 @@
 
 (defun extract-definitions-from-system (system &key . #.+keywords+)
   #.+doc+
-  #.+ignore+  
+  #.+ignore+
+  ;; Ensure all dependencies to be compiled and loaded.
+  ;; Without this, all dependent libraries may be accidentally
+  ;; recompiled and may appear in the output.
   (let ((*compile-print* nil)
         (*compile-verbose* nil))
     (asdf:load-system system))
+  
   (uiop:with-temporary-file (:pathname p)
     (call-with-extracting-definitions
      (lambda ()
