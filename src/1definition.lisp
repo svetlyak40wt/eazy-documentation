@@ -46,8 +46,15 @@
            (file    (equal f1 f2))
            (a1 (slot-boundp a 'args))
            (a2 (slot-boundp b 'args))   ;note: this is not let*
-           (args (equal (ignore-errors a1) (ignore-errors a2)))
-           (string (equal (ignore-errors s1) (ignore-errors s2))))
+           ;; NOTE: Why we need to ignore errors
+           ;; when accessing variable values?
+           (args (equal (when (slot-boundp a 'args)
+                          a1)
+                        (when (slot-boundp b 'args) a2)))
+           (string (equal (when (slot-boundp a 'docstring)
+                            s1)
+                          (when (slot-boundp b 'docstring)
+                            s2))))
        (when (and file string)
          ;; (break "~@{~a ~}" a b)
          (cond
@@ -73,7 +80,14 @@
      (let ((file (equal f1 f2))
            (s1 (slot-boundp a 'docstring))
            (s2 (slot-boundp b 'docstring))
-           (string (equal (ignore-errors s1) (ignore-errors s2))))
+           ;; NOTE: very magic code, because it is not let*
+           ;; and I don't undertand how and why it works
+           (string (equal (ignore-and-log-errors
+                            (when (slot-boundp a 'docstring)
+                              s1))
+                          (ignore-and-log-errors
+                            (when (slot-boundp b 'docstring)
+                              s2)))))
        (when file
          (cond
            ;; different name, but same docstring, args, package
@@ -89,8 +103,10 @@
     (if (slot-boundp to slot)
         (progn
           (note "~&Overwriting ~a for (~a ~a ...) :~:_ ~a~:_ ->~:_ ~a" slot (doctype to) (name to)
-                (ignore-errors (slot-value to slot))
-                (ignore-errors (slot-value from slot)))
+                (ignore-and-log-errors
+                 (slot-value to slot))
+                (ignore-and-log-errors
+                 (slot-value from slot)))
           (setf (slot-value to slot) (funcall fn (slot-value to slot) (slot-value from slot))))
         (setf (slot-value to slot) (slot-value from slot)))))
 

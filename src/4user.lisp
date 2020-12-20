@@ -133,7 +133,7 @@
     ;; Probably it is not a good idea to suppress all errors
     ;; Maybe we should at least use traceback as a document body?
     ;; This will make debugging simpler.
-    (ignore-errors
+    (ignore-and-log-errors
      (add-def :name (make-keyword (local-enough-namestring file))
               :doctype 'static-file
               :file file

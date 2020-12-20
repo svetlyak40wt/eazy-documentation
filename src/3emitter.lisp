@@ -145,12 +145,12 @@
              (when (not (equal file pfile))
                (push
                 (make-section (make-content
-                               (list+ (ignore-errors
+                               (list+ (ignore-and-log-errors
                                         (make-text
                                          (or (pathname-name pfile)
                                              (error "skip"))
                                          :metadata (classes "file")))
-                                      (ignore-errors
+                                      (ignore-and-log-errors
                                         (make-text
                                          (or (pathname-type pfile)
                                              (error "skip"))
@@ -168,8 +168,10 @@
                (setf tmp-doc-entries nil))
              
              ;; make a new section across the directory boundary
-             (when (not (equal (ignore-errors (pathname-directory file))
-                               (ignore-errors (pathname-directory pfile))))
+             (when (not (equal (ignore-and-log-errors
+                                (pathname-directory file))
+                               (ignore-and-log-errors
+                                (pathname-directory pfile))))
                (push
                 (let ((dirname
                        (namestring
@@ -193,12 +195,12 @@
             tmp-doc-entries))
          (when tmp-doc-entries
            (push
-            (make-section (list+ (ignore-errors
+            (make-section (list+ (ignore-and-log-errors
                                    (make-text
                                     (or (pathname-name pfile)
                                         (error "skip"))
                                     :metadata (classes "file")))
-                                 (ignore-errors
+                                 (ignore-and-log-errors
                                    (make-text
                                     (or (pathname-type pfile)
                                         (error "skip"))
@@ -265,9 +267,10 @@
 (defun list+ (&rest args) (remove nil (flatten args)))
 
 (defun print-args (def)
-  (ignore-errors
+  (ignore-and-log-errors
     (span (let ((*print-pretty* t) (*print-right-margin* 1000))
-            (format nil "~(~{~a~^ ~}~)" (args def)))
+            (format nil "~(~{~a~^ ~}~)" (when (slot-boundp def 'args)
+                                          (args def))))
           "args" "lisp")))
 
 (defun print-package (def)
@@ -350,7 +353,9 @@
 (defun insert-docstring (def entry markup multi-p)
   (push (if (eq 'static-file (doctype def))
             (par (convert-file-to-html-string (file def)) "docstring")
-            (if-let ((doc (ignore-errors (docstring def))))
+            (if-let ((doc (ignore-and-log-errors
+                            (when (slot-boundp def 'docstring)
+                              (docstring def)))))
               (par (convert-string-to-html-string doc markup) "docstring")
               (par (if multi-p
                        "(all documentation missing)"
