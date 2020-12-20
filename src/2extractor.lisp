@@ -27,6 +27,17 @@
   (funcall *old-macroexpand-hook* expander form env))
 
 (defun extract-definitions (form)
+  ;; TODO: This code is for DEBUG only:
+  (let ((filename "doc/build/forms.lisp"))
+    (ensure-directories-exist filename)
+    (with-open-file (s filename
+                       :if-exists :append
+                       :if-does-not-exist :create
+                       :direction :output)
+      (write form :stream s)
+      (terpri s)
+      (terpri s)))
+  
   (match form
     #+(or)
     ((list* 'setf args)
