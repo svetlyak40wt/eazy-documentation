@@ -18,6 +18,7 @@
               :common-doc
               :common-html
               :common-doc-split-paragraphs
+              :trivial-backtrace
               :cl-who)
  :pathname "src/"
  :serial t
