@@ -93,3 +93,16 @@ Advantages over the existing libraries:
       (apply #'format
              *error-output*
              format-string args))))
+
+
+(defun %ignore-and-log-errors (func)
+  (handler-bind ((error (lambda (c)
+                          (trivial-backtrace:print-backtrace c)
+                          (return-from %ignore-and-log-errors))))
+    (funcall func)))
+
+
+(defmacro ignore-and-log-errors (&body body)
+  `(%ignore-and-log-errors
+    (lambda ()
+      ,@body)))

@@ -133,7 +133,7 @@
     ;; Probably it is not a good idea to suppress all errors
     ;; Maybe we should at least use traceback as a document body?
     ;; This will make debugging simpler.
-    (ignore-errors
+    (ignore-and-log-errors
      (add-def :name (make-keyword (local-enough-namestring file))
               :doctype 'static-file
               :file file
@@ -153,10 +153,14 @@
 
 (defun extract-definitions-from-system (system &key . #.+keywords+)
   #.+doc+
-  #.+ignore+  
+  #.+ignore+
+  ;; Ensure all dependencies to be compiled and loaded.
+  ;; Without this, all dependent libraries may be accidentally
+  ;; recompiled and may appear in the output.
   (let ((*compile-print* nil)
         (*compile-verbose* nil))
     (asdf:load-system system))
+  
   (uiop:with-temporary-file (:pathname p)
     (call-with-extracting-definitions
      (lambda ()

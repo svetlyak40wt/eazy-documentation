@@ -89,8 +89,9 @@ use uiop:pathname-directory-pathanme when you need path/to/dir/
 
 (defun copy-to-dir (src dir &optional force)
   (let ((dst (copy-destination src dir)))
-    (ignore-errors
-      (copy-file src dst :if-to-exists (if force :supersede :error)))))
+    (when (or (not (probe-file dst))
+              force)
+      (copy-file src dst :if-to-exists :supersede))))
 
 (defun local-enough-namestring (file)
   (enough-namestring file *local-root*))
